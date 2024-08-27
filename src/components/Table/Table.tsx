@@ -1,5 +1,5 @@
 import React from "react";
-import { Feedback } from "../../views/Feedbacks/types";
+import { Feedback } from "../../api/types";
 import SimpleButton from "../../components/Buttons/SimpleButton.tsx";
 
 interface Column {
@@ -14,6 +14,7 @@ interface TableProps {
   lastPage: number;
   onPageChange: (page: number) => void;
   withActions?: boolean;
+  onActionClick?: (item: Feedback) => void;
 }
 
 const Table: React.FC<TableProps> = ({
@@ -23,6 +24,7 @@ const Table: React.FC<TableProps> = ({
   lastPage,
   onPageChange,
   withActions,
+  onActionClick,
 }) => {
   return (
     <div className="p-4">
@@ -39,44 +41,58 @@ const Table: React.FC<TableProps> = ({
             )}
           </tr>
         </thead>
-        <tbody>
-          {data.map((item, rowIndex) => (
-            <tr
-              key={rowIndex}
-              className={rowIndex % 2 === 0 ? "bg-gray-100" : "bg-white"}
+        {data.length > 0 ? (
+          <tbody>
+            {data.map((item, rowIndex) => (
+              <tr
+                key={rowIndex}
+                className={rowIndex % 2 === 0 ? "bg-gray-100" : "bg-white"}
+              >
+                {columns.map((col) => (
+                  <td key={col.key} className="py-2 px-4 border-b">
+                    {item[col.key as keyof Feedback]}
+                  </td>
+                ))}
+                {withActions && (
+                  <td className="py-2 px-4 border-b">
+                    <SimpleButton
+                      text={"View"}
+                      onClick={() => onActionClick?.(item)}
+                    />
+                  </td>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        ) : (
+          <tr>
+            <td
+              colSpan={columns.length + 1}
+              className="px-6 py-4 text-center text-gray-500"
             >
-              {columns.map((col) => (
-                <td key={col.key} className="py-2 px-4 border-b">
-                  {item[col.key as keyof Feedback]}
-                </td>
-              ))}
-              {withActions && (
-                <td className="py-2 px-4 border-b">
-                  <SimpleButton
-                    text={"View"}
-                    onClick={() => console.log("clicked", item.id)}
-                  />
-                </td>
-              )}
-            </tr>
-          ))}
-        </tbody>
+              No data
+            </td>
+          </tr>
+        )}
       </table>
-      <div className="mt-4 flex justify-center space-x-2">
-        {Array.from({ length: lastPage }, (_, index) => (
-          <button
-            key={index + 1}
-            onClick={() => onPageChange(index + 1)}
-            disabled={currentPage === index + 1}
-            className={`py-2 px-4 rounded-lg ${
-              currentPage === index + 1
-                ? "bg-blue-500 text-white"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-            } focus:outline-none`}
-          >
-            {index + 1}
-          </button>
-        ))}
+      <div className="mt-4 flex justify-center">
+        <button
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="py-2 px-4 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 focus:outline-none"
+        >
+          Previous
+        </button>
+        <span className="py-2 px-4 text-gray-700">
+          Page {currentPage} of {lastPage}
+        </span>
+        <button
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === lastPage}
+          className="py-2 px-4 rounded-lg bg-gray-200 text-gray-700 hover:bg-gray-300 focus:outline-none"
+        >
+          Next
+        </button>
       </div>
     </div>
   );

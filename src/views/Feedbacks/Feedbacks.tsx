@@ -1,40 +1,46 @@
 import { useEffect, useState } from "react";
-import axiosClient from "../../axios-client.js";
+import { fetchFeedbackData } from "../../api/apiService";
 import Table from "../../components/Table/Table.tsx";
-import Dropdown from "../../components/Select/Dropdown.tsx";
-import { Feedback, FetchResponse } from "./types"; // Adjust the import path as needed
+import CategoriesDropdown from "../../components/Select/CategoriesDropdown.tsx";
+import StateDropdown from "../../components/Select/StateDropdown.tsx";
+import { Feedback } from "../../api/types.js";
+import { useNavigate } from "react-router-dom";
 
 export default function Feedbacks() {
+  const navigate = useNavigate();
+
   const [data, setData] = useState<Feedback[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedState, setSelectedState] = useState<string>("");
 
   const columns = [
     { label: "Name", key: "game_name" },
+    { label: "Created at", key: "created_at" },
     { label: "State", key: "feedback_state" },
     { label: "Platform", key: "platform" },
-    { label: "Version", key: "version" },
     { label: "Category", key: "category" },
-    { label: "Content", key: "content" },
   ];
 
   useEffect(() => {
-    fetchData(currentPage, selectedCategory);
-  }, [currentPage, selectedCategory]);
+    const loadData = async () => {
+      try {
+        const response = await fetchFeedbackData(
+          currentPage,
+          selectedCategory,
+          selectedState
+        );
+        setData(response.data);
+        setCurrentPage(response.meta.current_page);
+        setLastPage(response.meta.last_page);
+      } catch (error) {
+        console.error("Error fetching data", error);
+      }
+    };
 
-  const fetchData = async (page: number, category: string) => {
-    try {
-      const response = await axiosClient.get<FetchResponse>(
-        `/fetch?page=${page}&category=${category}`
-      );
-      setData(response.data.data);
-      setCurrentPage(response.data.meta.current_page);
-      setLastPage(response.data.meta.last_page);
-    } catch (error) {
-      console.error("Error fetching data", error);
-    }
-  };
+    loadData();
+  }, [currentPage, selectedCategory, selectedState]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -42,18 +48,33 @@ export default function Feedbacks() {
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
-    setCurrentPage(1); // Reset to the first page when category changes
+    setCurrentPage(1);
   };
 
-  const categories = ["", "Action", "Adventure", "Strategy"]; // Add more categories as needed
+  const handleStateChange = (state: string) => {
+    setSelectedState(state);
+    setCurrentPage(1);
+  };
+
+  const handleActionClick = (feedback: Feedback) => {
+    navigate(`/feedbacks/${feedback.id}`);
+  };
 
   return (
-    <>
-      <Dropdown
-        options={categories}
-        selected={selectedCategory || "Filter by Category"}
-        onSelect={handleCategoryChange}
-      />
+    <div className="p-4">
+      <div className="flex flex-col p-4">
+        <span className="text-lg font-semibold">Filters:</span>
+        <div className="flex space-x-4">
+          <StateDropdown
+            selectedState={selectedState}
+            onStateChange={handleStateChange}
+          />
+          <CategoriesDropdown
+            selectedCategory={selectedCategory}
+            onCategoryChange={handleCategoryChange}
+          />
+        </div>
+      </div>
       <Table
         columns={columns}
         data={data}
@@ -61,7 +82,8 @@ export default function Feedbacks() {
         lastPage={lastPage}
         onPageChange={handlePageChange}
         withActions={true}
+        onActionClick={handleActionClick}
       />
-    </>
+    </div>
   );
 }

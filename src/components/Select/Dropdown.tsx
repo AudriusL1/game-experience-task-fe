@@ -1,8 +1,7 @@
-// components/Dropdown.tsx
-import { useState } from "react";
+import React from "react";
 
 interface DropdownProps {
-  options: string[];
+  options: { key: string; value: string }[];
   selected: string;
   onSelect: (option: string) => void;
   placeholder?: string;
@@ -14,44 +13,26 @@ const Dropdown: React.FC<DropdownProps> = ({
   onSelect,
   placeholder = "Select an option",
 }) => {
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-
-  const handleToggle = () => {
-    setIsOpen(!isOpen);
-  };
-
-  const handleSelect = (option: string) => {
-    onSelect(option);
-    setIsOpen(false);
+  const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    onSelect(event.target.value);
   };
 
   return (
-    <div
-      className="relative inline-block text-left"
-      style={{ padding: "36px" }}
-    >
-      <button
-        type="button"
-        onClick={handleToggle}
-        className="bg-blue-500 text-white px-4 py-2 rounded-md shadow-md focus:outline-none"
+    <div className="relative inline-block text-left">
+      <select
+        value={selected}
+        onChange={handleChange}
+        className="block w-full bg-white border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
       >
-        {selected || placeholder}
-      </button>
-      {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-300 rounded-md shadow-lg">
-          <div className="p-2">
-            {options.map((option) => (
-              <button
-                key={option}
-                onClick={() => handleSelect(option)}
-                className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
-              >
-                {option}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+        <option value="" disabled>
+          {placeholder}
+        </option>
+        {options.map((option) => (
+          <option key={option.key} value={option.key}>
+            {option.value}
+          </option>
+        ))}
+      </select>
     </div>
   );
 };
