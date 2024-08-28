@@ -41,7 +41,7 @@ const Table: React.FC<TableProps> = ({
             )}
           </tr>
         </thead>
-        {data.length > 0 ? (
+        {data && data.length > 0 ? (
           <tbody>
             {data.map((item, rowIndex) => (
               <tr

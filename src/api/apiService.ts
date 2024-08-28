@@ -9,7 +9,7 @@ export const fetchFeedbackData = async (
 ): Promise<FetchResponse> => {
   try {
     const response = await axiosClient.get<FetchResponse>(
-      `/fetch?page=${page}&category=${category}&state=${state}`
+      `/feedbacks?page=${page}&category=${category}&state=${state}`
     );
     return response.data;
   } catch (error) {
