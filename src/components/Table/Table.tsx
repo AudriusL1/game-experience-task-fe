@@ -27,7 +27,7 @@ const Table: React.FC<TableProps> = ({
   onActionClick,
 }) => {
   return (
-    <div className="p-4">
+    <div className="p-4 overflow-x-auto">
       <table className="min-w-full table-auto bg-white shadow-md rounded-lg">
         <thead>
           <tr className="bg-gray-200 text-gray-700">
